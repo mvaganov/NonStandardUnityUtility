@@ -6,18 +6,7 @@ using UnityEngine.Events;
 namespace NonStandard.Utility {
 	public class Delayed : MonoBehaviour {
 		public UnityEvent afterStart;
-		private static Delayed _instance;
-		public static Delayed Instance {
-			get {
-				if (_instance) return _instance;
-				_instance = FindObjectOfType<Delayed>();
-				if (_instance == null) {
-					GameObject go = new GameObject(nameof(Delayed));
-					_instance = go.AddComponent<Delayed>();
-                }
-				return _instance;
-            }
-        }
+		public static Delayed Instance => Global.GetComponent<Delayed>();
 		void Start() {
 			if (afterStart != null && afterStart.GetPersistentEventCount() > 0) {
 				DelayFrames(1, () => afterStart.Invoke());
