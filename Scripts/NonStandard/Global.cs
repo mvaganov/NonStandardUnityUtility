@@ -68,5 +68,9 @@ namespace NonStandard {
 			string c = "color", a = "#84f", b = "#48f";
 			Debug.Log("<" + c + "=" + a + ">"+nameof(Global)+"</" + c + ">.IsQuitting = <" + c + "=" + b + ">true</" + c + ">;");
 		}
-	}
+        private void OnDestroy() {
+            if (IsQuitting) { return; }
+			globs.Remove(this);
+        }
+    }
 }
