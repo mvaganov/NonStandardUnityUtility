@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+#if UNITY_EDITOR
+using UnityEditor.Events;
+#endif
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace NonStandard {
@@ -15,6 +19,7 @@ namespace NonStandard {
 #endif
 		public PauseEvents pauseEvents = new PauseEvents();
 		private bool _isPaused;
+		private float originalTimeScale = 1;
 		public bool isPaused {
 			get => _isPaused;
 			set {
@@ -40,6 +45,20 @@ namespace NonStandard {
 			onMobileStart?.Invoke();
 #endif
 		}
+		private void Reset() {
+#if UNITY_EDITOR
+			// bind the callbacks the long way, since NonStandard.EventBind is not a required library
+			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(FreezeTime), Type.EmptyTypes);
+			UnityAction action = Delegate.CreateDelegate(typeof(UnityAction), this, targetinfo, false) as UnityAction;
+			UnityEventTools.AddVoidPersistentListener(pauseEvents.onPause, action);
+			targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(UnfreezeTime), Type.EmptyTypes);
+			action = Delegate.CreateDelegate(typeof(UnityAction), this, targetinfo, false) as UnityAction;
+			UnityEventTools.AddVoidPersistentListener(pauseEvents.onUnpause, action);
+#else
+			pauseEvents.onPause.AddListener(FreezeTime);
+			pauseEvents.onUnpause.AddListener(UnfreezeTime);
+#endif
+		}
 		public void Quit() { Exit(); }
 
 		public static void Exit() {
@@ -59,6 +78,12 @@ namespace NonStandard {
 			_isPaused = false;
 			if (pauseEvents.onUnpause != null) { pauseEvents.onUnpause.Invoke(); }
 		}
-
+		public void FreezeTime() {
+			originalTimeScale = Time.timeScale;
+			Time.timeScale = 0;
+		}
+		public void UnfreezeTime() {
+			Time.timeScale = originalTimeScale;
+		}
 	}
 }
