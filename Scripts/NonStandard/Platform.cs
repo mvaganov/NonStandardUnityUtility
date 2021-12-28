@@ -1,21 +1,21 @@
 ﻿using System;
+using UnityEngine;
+using UnityEngine.Events;
 #if UNITY_EDITOR
 using UnityEditor.Events;
 #endif
-using UnityEngine;
-using UnityEngine.Events;
 
 namespace NonStandard {
 	public class Platform : MonoBehaviour {
 		public static Platform Instance => Global.GetComponent<Platform>();
 #if UNITY_EDITOR
-		public UnityEvent onUnityEditorStart;
+		public LifeCycleEvents editorLifeCycleEvents = new LifeCycleEvents();
 #endif
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-		public UnityEvent onWebplayerStart;
+		public LifeCycleEvents webPlayerLifeCycleEvents = new LifeCycleEvents();
 #endif
 #if UNITY_EDITOR || UNITY_ANDROID || UNITY_IPHONE
-		public UnityEvent onMobileStart;
+		public LifeCycleEvents mobileLifeCycleEvents = new LifeCycleEvents();
 #endif
 		public PauseEvents pauseEvents = new PauseEvents();
 		private bool _isPaused;
@@ -27,25 +27,38 @@ namespace NonStandard {
 				if (value) { Pause(); } else { Unpause(); }
             }
         }
-
-		[System.Serializable]
-		public class PauseEvents {
+		[System.Serializable] public class LifeCycleEvents {
+			public UnityEvent onStart;
+			public UnityEvent onDestroy;
+		}
+		[System.Serializable] public class PauseEvents {
 			[Tooltip("do this when time is paused")] public UnityEvent onPause = new UnityEvent();
 			[Tooltip("do this when time is unpaused")] public UnityEvent onUnpause = new UnityEvent();
 		}
 
 		void Start() {
 #if UNITY_EDITOR
-			onUnityEditorStart?.Invoke();
+				editorLifeCycleEvents.onStart.Invoke();
 #endif
 #if UNITY_WEBPLAYER
-			onWebplayerStart?.Invoke();
+				webPlayerLifeCycleEvents.onStart.Invoke();
 #endif
 #if UNITY_ANDROID || UNITY_IPHONE
-			onMobileStart?.Invoke();
+				mobileLifeCycleEvents.onStart.Invoke();
 #endif
 		}
-		private void Reset() {
+		private void OnDestroy() {
+#if UNITY_EDITOR
+				editorLifeCycleEvents.onDestroy.Invoke();
+#endif
+#if UNITY_WEBPLAYER
+				webPlayerLifeCycleEvents.onDestroy.Invoke();
+#endif
+#if UNITY_ANDROID || UNITY_IPHONE
+				mobileLifeCycleEvents.onDestroy.Invoke();
+#endif
+		}
+        private void Reset() {
 #if UNITY_EDITOR
 			// bind the callbacks the long way, since NonStandard.EventBind is not a required library
 			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(FreezeTime), Type.EmptyTypes);
