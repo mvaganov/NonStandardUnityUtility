@@ -42,7 +42,7 @@ namespace NonStandard {
 			directory[typeof(T)] = componentInstance;
 			return componentInstance;
 		}
-		public void TogglePause() { Platform p = Platform.Instance; if(p.isPaused) { p.Unpause(); } else { p.Pause(); } }
+		public void TogglePause() { LifeCycle p = LifeCycle.Instance; if(p.isPaused) { p.Unpause(); } else { p.Pause(); } }
 		public void ToggleActive(GameObject go) {
 			if (go != null) {
 				go.SetActive(!go.activeSelf);

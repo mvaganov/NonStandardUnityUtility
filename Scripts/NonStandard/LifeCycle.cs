@@ -6,16 +6,16 @@ using UnityEditor.Events;
 #endif
 
 namespace NonStandard {
-	public class Platform : MonoBehaviour {
-		public static Platform Instance => Global.GetComponent<Platform>();
+	public class LifeCycle : MonoBehaviour {
+		public static LifeCycle Instance => Global.GetComponent<LifeCycle>();
 #if UNITY_EDITOR
-		public LifeCycleEvents editorLifeCycleEvents = new LifeCycleEvents();
+		public LifeCycleEvents lifeCycleEditor = new LifeCycleEvents();
 #endif
 #if UNITY_EDITOR || UNITY_WEBPLAYER
-		public LifeCycleEvents webPlayerLifeCycleEvents = new LifeCycleEvents();
+		public LifeCycleEvents lifeCycleWebPlayer = new LifeCycleEvents();
 #endif
 #if UNITY_EDITOR || UNITY_ANDROID || UNITY_IPHONE
-		public LifeCycleEvents mobileLifeCycleEvents = new LifeCycleEvents();
+		public LifeCycleEvents lifeCycleMobile = new LifeCycleEvents();
 #endif
 		public PauseEvents pauseEvents = new PauseEvents();
 		private bool _isPaused;
@@ -38,27 +38,27 @@ namespace NonStandard {
 
 		void Start() {
 #if UNITY_EDITOR
-				editorLifeCycleEvents.onStart.Invoke();
+				lifeCycleEditor.onStart.Invoke();
 #endif
 #if UNITY_WEBPLAYER
-				webPlayerLifeCycleEvents.onStart.Invoke();
+				lifeCycleWebPlayer.onStart.Invoke();
 #endif
 #if UNITY_ANDROID || UNITY_IPHONE
-				mobileLifeCycleEvents.onStart.Invoke();
+				lifeCycleMobile.onStart.Invoke();
 #endif
 		}
 		private void OnDestroy() {
 #if UNITY_EDITOR
-				editorLifeCycleEvents.onDestroy.Invoke();
+				lifeCycleEditor.onDestroy.Invoke();
 #endif
 #if UNITY_WEBPLAYER
-				webPlayerLifeCycleEvents.onDestroy.Invoke();
+				lifeCycleWebPlayer.onDestroy.Invoke();
 #endif
 #if UNITY_ANDROID || UNITY_IPHONE
-				mobileLifeCycleEvents.onDestroy.Invoke();
+				lifeCycleMobile.onDestroy.Invoke();
 #endif
 		}
-        private void Reset() {
+		private void Reset() {
 #if UNITY_EDITOR
 			// bind the callbacks the long way, since NonStandard.EventBind is not a required library
 			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(FreezeTime), Type.EmptyTypes);
@@ -92,6 +92,7 @@ namespace NonStandard {
 			if (pauseEvents.onUnpause != null) { pauseEvents.onUnpause.Invoke(); }
 		}
 		public void FreezeTime() {
+			if (Time.timeScale == 0) { return; }
 			originalTimeScale = Time.timeScale;
 			Time.timeScale = 0;
 		}
