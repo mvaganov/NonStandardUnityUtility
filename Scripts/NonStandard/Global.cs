@@ -55,9 +55,11 @@ namespace NonStandard {
 			if (globs.IndexOf(this) < 0) { globs.Add(this); }
 			Component[] components = GetComponents<Component>();
 			for(int i = 0; i < components.Length; ++i) {
-				System.Type t = components[i].GetType();
+				Component c = components[i];
+				if (c == null) { continue; }
+				System.Type t = c.GetType();
 				if (!directory.TryGetValue(t, out object foundIt)) {
-					directory[t] = components[i];
+					directory[t] = c;
 				}
 			}
 		}

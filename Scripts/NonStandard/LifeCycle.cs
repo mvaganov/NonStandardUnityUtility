@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor.Events;
 #endif
@@ -18,8 +19,9 @@ namespace NonStandard {
 		public LifeCycleEvents lifeCycleMobile = new LifeCycleEvents();
 #endif
 		public PauseEvents pauseEvents = new PauseEvents();
-		private bool _isPaused;
-		private float originalTimeScale = 1;
+		private static HashSet<LifeCycle> lifeCycles = new HashSet<LifeCycle>();
+		private static bool _isPaused;
+		private static float originalTimeScale = 1;
 		public bool isPaused {
 			get => _isPaused;
 			set {
@@ -35,8 +37,10 @@ namespace NonStandard {
 			[Tooltip("do this when time is paused")] public UnityEvent onPause = new UnityEvent();
 			[Tooltip("do this when time is unpaused")] public UnityEvent onUnpause = new UnityEvent();
 		}
-
-		void Start() {
+        private void Awake() {
+			lifeCycles.Add(this);
+		}
+        void Start() {
 #if UNITY_EDITOR
 				lifeCycleEditor.onStart.Invoke();
 #endif
@@ -84,12 +88,18 @@ namespace NonStandard {
 #endif
 		}
 		public void Pause() {
+			if (_isPaused) return;
 			_isPaused = true;
-			if (pauseEvents.onPause != null) { pauseEvents.onPause.Invoke(); }
+			foreach (LifeCycle lc in lifeCycles) {
+				if (lc.pauseEvents.onPause != null) { lc.pauseEvents.onPause.Invoke(); }
+			}
 		}
 		public void Unpause() {
+			if (!_isPaused) return;
 			_isPaused = false;
-			if (pauseEvents.onUnpause != null) { pauseEvents.onUnpause.Invoke(); }
+			foreach (LifeCycle lc in lifeCycles) {
+				if (lc.pauseEvents.onUnpause != null) { lc.pauseEvents.onUnpause.Invoke(); }
+			}
 		}
 		public void FreezeTime() {
 			if (Time.timeScale == 0) { return; }
@@ -97,6 +107,7 @@ namespace NonStandard {
 			Time.timeScale = 0;
 		}
 		public void UnfreezeTime() {
+			if (originalTimeScale == 0) { return; }
 			Time.timeScale = originalTimeScale;
 		}
 	}
