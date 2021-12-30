@@ -64,13 +64,8 @@ namespace NonStandard {
 		}
 		private void Reset() {
 #if UNITY_EDITOR
-			// bind the callbacks the long way, since NonStandard.EventBind is not a required library
-			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(FreezeTime), Type.EmptyTypes);
-			UnityAction action = Delegate.CreateDelegate(typeof(UnityAction), this, targetinfo, false) as UnityAction;
-			UnityEventTools.AddVoidPersistentListener(pauseEvents.onPause, action);
-			targetinfo = UnityEvent.GetValidMethodInfo(this, nameof(UnfreezeTime), Type.EmptyTypes);
-			action = Delegate.CreateDelegate(typeof(UnityAction), this, targetinfo, false) as UnityAction;
-			UnityEventTools.AddVoidPersistentListener(pauseEvents.onUnpause, action);
+			Utility.Event.Bind(pauseEvents.onPause, this, nameof(FreezeTime));
+			Utility.Event.Bind(pauseEvents.onUnpause, this, nameof(UnfreezeTime));
 #else
 			pauseEvents.onPause.AddListener(FreezeTime);
 			pauseEvents.onUnpause.AddListener(UnfreezeTime);
