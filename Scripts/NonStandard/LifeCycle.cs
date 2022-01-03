@@ -27,8 +27,8 @@ namespace NonStandard {
 			set {
 				if (value == isPaused) return;
 				if (value) { Pause(); } else { Unpause(); }
-            }
-        }
+			}
+		}
 		[System.Serializable] public class LifeCycleEvents {
 			public UnityEvent onStart;
 			public UnityEvent onDestroy;
@@ -37,10 +37,10 @@ namespace NonStandard {
 			[Tooltip("do this when time is paused")] public UnityEvent onPause = new UnityEvent();
 			[Tooltip("do this when time is unpaused")] public UnityEvent onUnpause = new UnityEvent();
 		}
-        private void Awake() {
+		private void Awake() {
 			lifeCycles.Add(this);
 		}
-        void Start() {
+		void Start() {
 #if UNITY_EDITOR
 				lifeCycleEditor.onStart.Invoke();
 #endif

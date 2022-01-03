@@ -43,6 +43,7 @@ namespace NonStandard {
 			return componentInstance;
 		}
 		public void TogglePause() { LifeCycle p = LifeCycle.Instance; if(p.isPaused) { p.Unpause(); } else { p.Pause(); } }
+		public void Exit() => LifeCycle.Exit();
 		public void ToggleActive(GameObject go) {
 			if (go != null) {
 				go.SetActive(!go.activeSelf);
@@ -69,9 +70,9 @@ namespace NonStandard {
 			string c = "color", a = "#84f", b = "#48f";
 			Debug.Log("<" + c + "=" + a + ">"+nameof(Global)+"</" + c + ">.IsQuitting = <" + c + "=" + b + ">true</" + c + ">;");
 		}
-        private void OnDestroy() {
-            if (IsQuitting) { return; }
+		private void OnDestroy() {
+			if (IsQuitting) { return; }
 			globs.Remove(this);
-        }
-    }
+		}
+	}
 }
