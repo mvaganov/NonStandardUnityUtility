@@ -32,11 +32,21 @@ namespace NonStandard.Utility {
 			yield return new WaitForSeconds(timeInSeconds);
 			action.Invoke();
 		}
+		public static IEnumerator WaitFrameCoroutine(int frames, Action action) {
+			for (int i = 0; i < frames; i++) { yield return new WaitForEndOfFrame(); }
+			action.Invoke();
+		}
 		public static void Wait(float timeInSeconds, Action action, MonoBehaviour whoExecutesTheCoroutine = null) {
 			if (whoExecutesTheCoroutine == null) {
 				whoExecutesTheCoroutine = FindObjectOfType<MonoBehaviour>();
 			}
 			whoExecutesTheCoroutine.StartCoroutine(WaitCoroutine(timeInSeconds, action));
+		}
+		public static void WaitFrames(int frameCount, Action action, MonoBehaviour whoExecutesTheCoroutine = null) {
+			if (whoExecutesTheCoroutine == null) {
+				whoExecutesTheCoroutine = FindObjectOfType<MonoBehaviour>();
+			}
+			whoExecutesTheCoroutine.StartCoroutine(WaitFrameCoroutine(frameCount, action));
 		}
 	}
 }
