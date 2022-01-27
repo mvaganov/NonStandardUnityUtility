@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 
 namespace NonStandard.Utility {
 	/// <summary>
@@ -6,13 +7,13 @@ namespace NonStandard.Utility {
 	/// </summary>
 	public static class File {
 #if UNITY_EDITOR
-		public static List<string> FindFile(string path, string filename, int allowedRecursion = 0, string[] ignoreFolders = null) {
-			string[] list = System.IO.Directory.GetFiles(path);
+		public static List<string> FindFile(string absoluteStartingPath, string filename, int allowedRecursion = 0, string[] ignoreFolders = null) {
+			string[] list = System.IO.Directory.GetFiles(absoluteStartingPath);
 			List<string> result = null;
 			string n = System.IO.Path.DirectorySeparatorChar + filename;
 			for (int i = 0; i < list.Length; ++i) {
 				if (list[i].EndsWith(n)) {
-					//Debug.Log("f " + list[i]);
+					//UnityEngine.Debug.Log("f " + list[i]);
 					if (result == null) { result = new List<string>(); }
 					result.Add(list[i]);
 				}
@@ -27,10 +28,10 @@ namespace NonStandard.Utility {
 					}
 					return false;
 				}
-				list = System.IO.Directory.GetDirectories(path);
+				list = System.IO.Directory.GetDirectories(absoluteStartingPath);
 				for (int i = 0; i < list.Length; ++i) {
 					if (ShouldBeIgnored(list[i])) { continue; }
-					//Debug.Log("d "+list[i]);
+					//UnityEngine.Debug.Log("d "+list[i]);
 					List<string> r = FindFile(list[i], filename, allowedRecursion - 1);
 					if (r != null) {
 						if (result == null) { result = new List<string>(); }
@@ -40,9 +41,27 @@ namespace NonStandard.Utility {
 			}
 			return result;
 		}
+		public static void CopyFilesRecursively(string sourcePath, string targetPath) {
+			//Now Create all of the directories
+			foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories)) {
+				Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+			}
+
+			//Copy all the files & Replaces any files with the same name
+			foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories)) {
+				System.IO.File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+			}
+		}
+		public static string GetAbsolutePath(string subFolder = null) {
+			string startPath = System.IO.Path.GetFullPath(".");
+			if (subFolder != null) {
+				startPath += System.IO.Path.DirectorySeparatorChar + subFolder;
+			}
+			return startPath;
+		}
 		/// <param name="filename">do not include the path, do include the ".cs"</param>
 		/// <param name="fileData"></param>
-		public static void RewriteAssetCSharpFile(string filename, string fileData) {
+		public static void RewriteAssetCSharpFile(string filename, string fileData, string[] priorityPaths = null) {
 			string startPath = System.IO.Path.GetFullPath(".");
 			char dir = System.IO.Path.DirectorySeparatorChar;
 			string fileBranch = startPath + dir + "Assets";
@@ -60,8 +79,22 @@ namespace NonStandard.Utility {
 				}
 			}
 			if (found != null) {
-				//Debug.Log(string.Join("\n", found));
-				string path = found[0];
+				string path = null;
+				if(priorityPaths != null) {
+					for (int p = 0; p < priorityPaths.Length; p++) {
+						for (int i = 0; i < found.Count; i++) {
+							if (found[i].Contains(priorityPaths[p])) {
+								path = found[i];
+								break;
+							}
+						}
+						if (path != null) { break; }
+					}
+				}
+				if (path == null) {
+					//Debug.Log(string.Join("\n", found));
+					path = found[0];
+				}
 				System.IO.File.WriteAllText(path, fileData);
 				string relativePath = path.Substring(startPath.Length + 1);
 				//Debug.Log(relativePath);

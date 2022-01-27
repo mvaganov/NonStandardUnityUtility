@@ -1,4 +1,3 @@
-#define DEBUG
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace NonStandard.Utility {
     
     [InitializeOnLoad]
     public static class ShowDefines {
-        public static readonly string[] ForcedDefines = new string[] { };
+        public static readonly string[] ForcedDefines = new string[] { "NONSTANDARD" };
         static ShowDefines() {
 #if SHOW_DEFINES
             IList<string> defines =

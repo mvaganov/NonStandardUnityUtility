@@ -56,6 +56,15 @@ namespace NonStandard {
 #endif
 			@event.AddListener(action.Invoke);
 		}
+		public static void On<T>(UnityEventBase @event, object target, UnityAction<T> action, T value) where T : UnityEngine.Object {
+#if UNITY_EDITOR
+			if (target != null) {
+				new EventBind(target, action.Method.Name, value).Bind(@event, value);
+				return;
+			}
+#endif
+			(@event as UnityEvent<T>).AddListener((a)=>action.Invoke(value));
+		}
 		public static void On<T>(UnityEvent<T> @event, object target, UnityAction<T> action) {
 #if UNITY_EDITOR
 			if (target != null) {
@@ -102,6 +111,9 @@ namespace NonStandard {
 		public static void On(UnityEvent @event, object target, string methodName) {
 			new EventBind(target, methodName).Bind(@event);
 		}
+		public static void On<T>(UnityEvent @event, object target, string methodName, T value) where T : UnityEngine.Object {
+			new EventBind(target, methodName, value).Bind(@event, value);
+		}
 		public void Bind<T>(UnityEvent<T> @event) {
 #if UNITY_EDITOR
 			UnityEventTools.AddPersistentListener(@event, GetAction<T>(target, methodName));
@@ -125,10 +137,10 @@ namespace NonStandard {
 				UnityEventTools.AddStringPersistentListener(@event, GetAction<string>(target, methodName), (string)value);
 			} else if (value is bool) {
 				UnityEventTools.AddBoolPersistentListener(@event, GetAction<bool>(target, methodName), (bool)value);
-			} else if (value is GameObject) {
-				Bind<GameObject>(@event);
-			} else if (value is Transform) {
-				Bind<Transform>(@event);
+			} else if (value is GameObject go) {
+				Bind<GameObject>(@event, go);
+			} else if (value is Transform t) {
+				Bind<Transform>(@event, t);
 			} else {
 				Debug.LogError("unable to assign " + value.GetType());
 			}
@@ -137,15 +149,19 @@ namespace NonStandard {
 				@event.AddListener(() => targetinfo.Invoke(target, new object[] { value }));
 #endif
 		}
+		public void Bind<T>(UnityEventBase @event, T value) where T : UnityEngine.Object {
 #if UNITY_EDITOR
-		public void Bind<T>(UnityEvent @event) where T : UnityEngine.Object {
-			if (value is T) {
-				UnityEventTools.AddObjectPersistentListener(@event, GetAction<T>(target, methodName), (T)value);
+			if (value == null || value is T) {
+				UnityEventTools.AddObjectPersistentListener(@event, GetAction<T>(target, methodName), value);
 			} else {
-				Debug.LogError("unable to assign " + value.GetType());
+				Debug.LogError("unable to assign " + value.GetType() +", expected "+typeof(T));
 			}
-		}
+#else
+			// TODO test in compiled build
+			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, new Type[] { typeof(T) });
+			@event.AddListener(() => targetinfo.Invoke(target, new object[] { value }));
 #endif
+		}
 		public static List<EventBind> GetList(UnityEventBase @event) {
 			List<EventBind> eb = new List<EventBind>();
 			for(int i = 0; i <@event.GetPersistentEventCount(); ++i) {
