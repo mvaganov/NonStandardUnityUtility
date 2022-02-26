@@ -25,12 +25,17 @@ namespace NonStandard.Utility {
 				yield return new WaitForSeconds(seconds);
 				action.Invoke();
 			}
-        }
+		}
 		public static void Frames(int frameCount, Action action) {
 			Instance.DelayFrames(frameCount, action);
-        }
+		}
 		public static void Seconds(float seconds, Action action) {
 			Instance.DelaySeconds(seconds, action);
+		}
+		public static void Seconds<T>(float seconds, Action<T> action, Func<T> getArgs) {
+			Instance.DelaySeconds(seconds, () => {
+				action.Invoke(getArgs.Invoke());
+			});
 		}
 	}
 }
