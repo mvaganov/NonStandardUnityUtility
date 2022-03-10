@@ -21,8 +21,14 @@ namespace NonStandard {
 		public UnityAction<T> GetAction<T>(object target, string methodName) {
 			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, new Type[] { typeof(T) });
 			if (targetinfo == null) {
-				Debug.LogError("no method \"" + methodName + "\" (" + typeof(T).Name + ") in " + target.ToString());
-				return null;
+				// does it exist without an argument?
+				targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, Array.Empty<Type>());
+				if (targetinfo == null) {
+					Debug.LogError("no method \"" + methodName + "\" (" + typeof(T).Name + ") in " + target.ToString());
+					return null;
+				}
+				Debug.LogError("found "+methodName+" without parameters. You must create "+ methodName+"("+typeof(T)+") and use that.");
+				targetinfo = null;
 			}
 			return Delegate.CreateDelegate(typeof(UnityAction<T>), target, targetinfo, false) as UnityAction<T>;
 		}
@@ -177,7 +183,7 @@ namespace NonStandard {
 			string t = null;
 			if (target is UnityEngine.Object o) { t = o.name; }
 			else if (target != null) { t = target.ToString(); }
-			return t+"."+methodName;
+			return t+"."+methodName+"("+value+")";
 		}
 	}
 }
