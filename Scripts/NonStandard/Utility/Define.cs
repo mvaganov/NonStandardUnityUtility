@@ -8,8 +8,7 @@ namespace NonStandard.Utility {
     [InitializeOnLoad] public static class Utility_Define { static Utility_Define() { Utility.Define.Add("NONSTANDARD_UTILITY"); } }
 #endif
     
-    [InitializeOnLoad]
-    public static class ShowDefines {
+    [InitializeOnLoad] public static class ShowDefines {
         public static readonly string[] ForcedDefines = new string[] { "NONSTANDARD" };
         static ShowDefines() {
 #if SHOW_DEFINES

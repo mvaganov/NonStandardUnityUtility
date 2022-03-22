@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+#if UNITY_EDITOR
 using UnityEditor.Events;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -17,16 +19,23 @@ namespace NonStandard.Utility {
 		public static void Bind(UnityEvent @event, object target, string methodName) {
 			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, Type.EmptyTypes);
 			UnityAction action = Delegate.CreateDelegate(typeof(UnityAction), target, targetinfo, false) as UnityAction;
+#if UNITY_EDITOR
 			UnityEventTools.AddVoidPersistentListener(@event, action);
+#else
+			@event.AddListener(action);
+#endif
 		}
 		public static void Set(UnityEvent @event, object target, string methodName) {
 			Clear(@event);
 			Bind(@event, target, methodName);
 		}
 		public static void Clear(UnityEventBase @event) {
+#if UNITY_EDITOR
 			while (@event.GetPersistentEventCount() > 0) {
 				UnityEventTools.RemovePersistentListener(@event, @event.GetPersistentEventCount() - 1);
 			}
+#endif
+			@event.RemoveAllListeners();
 		}
 		public static IEnumerator WaitCoroutine(float timeInSeconds, Action action) {
 			yield return new WaitForSeconds(timeInSeconds);

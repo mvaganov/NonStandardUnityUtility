@@ -2,9 +2,6 @@
 using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
-#if UNITY_EDITOR
-using UnityEditor.Events;
-#endif
 
 namespace NonStandard {
 	public class LifeCycle : MonoBehaviour {
