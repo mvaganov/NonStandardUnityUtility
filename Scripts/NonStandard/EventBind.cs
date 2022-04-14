@@ -34,6 +34,7 @@ namespace NonStandard {
 			return Delegate.CreateDelegate(typeof(UnityAction<T>), target, targetinfo, false) as UnityAction<T>;
 		}
 		public static bool IfNotAlready<T>(UnityEvent<T> @event, UnityEngine.Object target, string methodName) {
+			if (@event == null) { throw new Exception("UnityEvent never allocated."); }
 			for(int i = 0; i < @event.GetPersistentEventCount(); ++i) {
 				if (@event.GetPersistentTarget(i) == target && @event.GetPersistentMethodName(i) == methodName) { return false; }
 			}
