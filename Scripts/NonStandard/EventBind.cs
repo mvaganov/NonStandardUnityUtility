@@ -25,13 +25,31 @@ namespace NonStandard {
 				// does it exist without an argument?
 				targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, Array.Empty<Type>());
 				if (targetinfo == null) {
-					Debug.LogError("no method \"" + methodName + "\" (" + typeof(T).Name + ") in " + target.ToString());
+					Debug.LogError("no \"" + methodName + "\" (" + typeof(T).Name + ") in " + target.ToString());
 					return null;
 				}
-				Debug.LogError("found "+methodName+" without parameters. You must create "+ methodName+"("+typeof(T)+") and use that.");
+				Debug.LogError("found "+methodName+" without parameters. You must create "+ methodName+"("+
+					typeof(T)+") and use that.");
 				targetinfo = null;
 			}
 			return Delegate.CreateDelegate(typeof(UnityAction<T>), target, targetinfo, false) as UnityAction<T>;
+		}
+		public UnityAction<T0,T1> GetAction<T0,T1>(object target, string methodName) {
+			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName,
+				new Type[] { typeof(T0), typeof(T1) });
+			if (targetinfo == null) {
+				// does it exist without an argument?
+				targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, Array.Empty<Type>());
+				if (targetinfo == null) {
+					Debug.LogError("no method \"" + methodName + "\" (" + typeof(T0).Name + ", " + typeof(T1).Name +
+						") in " + target.ToString());
+					return null;
+				}
+				Debug.LogError("found " + methodName + " without parameters. You must create " + methodName + "(" +
+					typeof(T0).Name + ", " + typeof(T1).Name + ") and use that.");
+				targetinfo = null;
+			}
+			return Delegate.CreateDelegate(typeof(UnityAction<T0,T1>), target, targetinfo, false) as UnityAction<T0,T1>;
 		}
 		public static bool IfNotAlready<T>(UnityEvent<T> @event, UnityEngine.Object target, string methodName) {
 			if (@event == null) { throw new Exception("UnityEvent never allocated."); }
@@ -128,6 +146,14 @@ namespace NonStandard {
 #else
 			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, new Type[]{typeof(T)});
 			@event.AddListener((val) => targetinfo.Invoke(target, new object[] { val }));
+#endif
+		}
+		public void Bind<T0,T1>(UnityEvent<T0,T1> @event) {
+#if UNITY_EDITOR
+			UnityEventTools.AddPersistentListener(@event, GetAction<T0,T1>(target, methodName));
+#else
+			System.Reflection.MethodInfo targetinfo = UnityEvent.GetValidMethodInfo(target, methodName, new Type[] { typeof(T0), typeof(T1) });
+			@event.AddListener((t0,t1) => targetinfo.Invoke(target, new object[] { t0, t1 }));
 #endif
 		}
 		public void Bind(UnityEvent @event) {
