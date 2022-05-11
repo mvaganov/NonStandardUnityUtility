@@ -116,12 +116,21 @@ namespace NonStandard {
 			}
 			return -1;
 		}
+		public static int GetPersistentEventMethodNameIndex(UnityEventBase @event, string methodName) {
+			for (int i = 0; i < @event.GetPersistentEventCount(); ++i) {
+				if (@event.GetPersistentMethodName(i) == methodName) { return i; }
+			}
+			return -1;
+		}
+		public static void RemoveAt(UnityEventBase @event, int index) {
+			UnityEventTools.RemovePersistentListener(@event, index);
+		}
 		public static bool Remove(UnityEventBase @event, UnityEngine.Object target, string methodName) {
 			int index = GetPersistentEventIndex(@event, target, methodName);
 			if (index >= 0) {
-				UnityEventTools.RemovePersistentListener(@event, index);
+				RemoveAt(@event, index);
 				return true;
-            }
+			}
 			return false;
 		}
 		public static void Clear(UnityEventBase @event) {
